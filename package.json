@@ -1,0 +1,21 @@
+{
+  "name": "juegoss",
+  "version": "1.0.0",
+  "description": "Juego de mesa digital local, inspirado en tu tablero SVG original, listo para jugar en navegador sin instalar dependencias.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:backend": "node backend/server.js",
+    "start:frontend": "npx serve frontend -l 4173",
+    "test": "node smoke-test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "ioredis": "^5.10.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
+  }
+}
