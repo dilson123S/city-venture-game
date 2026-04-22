@@ -1132,9 +1132,13 @@ button:disabled { cursor: not-allowed; opacity: 0.4; }
   border-radius: var(--radius-xl);
   border: 1px solid rgba(85,239,255,0.08);
   background: radial-gradient(circle at center, rgba(85,239,255,0.04), transparent 50%);
+  width: 100%;
+  max-width: calc(100vh - 200px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
 }
 
-.board-frame img { width: 100%; display: block; }
+.board-frame img { width: 100%; height: 100%; display: block; }
 
 .token-layer, .tile-highlight { position: absolute; inset: 0; }
 
