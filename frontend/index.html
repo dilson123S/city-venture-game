@@ -11,12 +11,24 @@
   <div class="ambient ambient-b"></div>
   <div class="ambient ambient-c"></div>
 
-  <main id="app" class="app-root" aria-live="polite"></main>
+  <main id="app" class="app-root" aria-live="polite">
+    <section class="auth-shell"><div class="auth-card-wrap"><article class="login-auth-card"><p class="eyebrow">Conectando</p><h2 class="section-title">City Venture</h2><p class="section-copy">Cargando scripts y conectando al servidor...</p></article></div></section>
+  </main>
 
   <script>
     window.CITY_VENTURE_BACKEND_URL = window.CITY_VENTURE_BACKEND_URL || "";
+    window.onerror = function(msg, src, line, col, err) {
+      var app = document.getElementById("app");
+      if (app) app.innerHTML = '<pre style="color:#ff5b5b;padding:30px;font-size:14px;white-space:pre-wrap;">ERROR FATAL:\n' + msg + '\nArchivo: ' + src + '\nLinea: ' + line + '\n' + (err && err.stack ? err.stack : '') + '</pre>';
+      return false;
+    };
   </script>
   <script src="https://cdn.socket.io/4.8.3/socket.io.min.js" crossorigin="anonymous"></script>
+  <script>
+    if (typeof io === 'undefined') {
+      document.getElementById("app").innerHTML = '<pre style="color:#ff5b5b;padding:30px;font-size:14px;">ERROR: No se pudo cargar Socket.IO.\nVerifica tu conexion a internet o si la red bloquea CDNs externos.\nIntenta recargar la pagina.</pre>';
+    }
+  </script>
   <script src="script.js"></script>
 </body>
 </html>
