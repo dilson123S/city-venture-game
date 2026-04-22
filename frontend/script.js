@@ -710,6 +710,8 @@
     const quickActions = renderHudQuickActions(view, { currentTile });
     const rightTopLabel = currentPlayer?.roleName || currentPlayer?.name || "Sin turno";
 
+    const negotiationSeconds = getNegotiationSeconds(view.session.turn.negotiationEndsAt);
+
     return `
       <section class="player-hud-shell">
         <section class="player-hud-canvas">
@@ -766,6 +768,19 @@
                 )}</p>
                 <div class="hud-action-zone">${quickActions}</div>
               </div>
+              
+              ${
+                view.session.turn.phase === "negotiation" || view.session.turn.phase === "victory_ready"
+                  ? `
+                    <div class="b2b-negotiation-panel">
+                      <h2 class="section-title" style="color: var(--neon-mint); text-align: center;">🤝 Ventana B2B: ${formatCountdown(negotiationSeconds)}</h2>
+                      ${renderContractComposer(view)}
+                    </div>
+                  `
+                  : ""
+              }
+              
+              ${renderContractsInbox(view)}
             </section>
 
             <section class="hud-panel hud-right">

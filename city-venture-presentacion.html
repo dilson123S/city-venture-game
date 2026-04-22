@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Venture: B2B Connect - Presentación del Proyecto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #020810;
+      --bg-card: rgba(6, 16, 28, 0.7);
+      --glass-border: rgba(85, 239, 255, 0.15);
+      --neon-cyan: #55efff;
+      --neon-mint: #44f0c7;
+      --neon-purple: #ae7aff;
+      --text-main: #e2f1ff;
+      --text-dim: #88a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(85, 239, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(68, 240, 199, 0.05) 0%, transparent 50%);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Títulos */
+    h1, h2, h3 {
+      font-family: 'Orbitron', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    header h1 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, var(--neon-cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 15px;
+      text-shadow: 0 0 40px rgba(85, 239, 255, 0.3);
+    }
+
+    header p.subtitle {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.2rem;
+      color: var(--neon-mint);
+      letter-spacing: 0.1em;
+    }
+
+    /* Secciones */
+    section {
+      margin-bottom: 50px;
+    }
+
+    section h2 {
+      font-size: 2rem;
+      color: var(--neon-cyan);
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    section h2::before {
+      content: ">";
+      color: var(--neon-mint);
+    }
+
+    p {
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+      color: #b0c8d6;
+    }
+
+    /* Grillas y Tarjetas */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 30px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(85, 239, 255, 0.1);
+      border-color: rgba(85, 239, 255, 0.4);
+    }
+
+    .card h3 {
+      font-size: 1.3rem;
+      color: #fff;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(85, 239, 255, 0.1);
+      padding-bottom: 10px;
+    }
+
+    /* Lista bonita */
+    ul.tech-list {
+      list-style: none;
+    }
+
+    ul.tech-list li {
+      position: relative;
+      padding-left: 25px;
+      margin-bottom: 12px;
+      font-size: 1.05rem;
+    }
+
+    ul.tech-list li::before {
+      content: "■";
+      position: absolute;
+      left: 0;
+      top: 2px;
+      color: var(--neon-mint);
+      font-size: 0.8rem;
+    }
+
+    /* Ficha Técnica Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 15px 20px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    th {
+      background: rgba(85, 239, 255, 0.1);
+      color: var(--neon-cyan);
+      font-family: 'Share Tech Mono', monospace;
+      width: 30%;
+    }
+
+    tr:last-child td, tr:last-child th {
+      border-bottom: none;
+    }
+
+    .highlight {
+      color: var(--neon-mint);
+      font-weight: bold;
+    }
+
+    /* Roles Grid */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .role-badge {
+      background: rgba(4, 12, 22, 0.8);
+      border: 1px dashed var(--neon-cyan);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      header h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <header>
+      <h1>City Venture: B2B Connect</h1>
+      <p class="subtitle">SIMULADOR EMPRESARIAL INTERACTIVO PARA LA EDUCACIÓN DEL SIGLO XXI</p>
+    </header>
+
+    <!-- PITCH & MODELO DE NEGOCIO -->
+    <section>
+      <h2>El Pitch y Modelo de Negocio</h2>
+      <p><em>"En este juego no gana el que tiene más suerte, sino el que sabe hacer mejores negocios con los demás."</em></p>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3>¿Qué es City Venture?</h3>
+          <p>Un juego de estrategia, cartas y dados donde no eres un vendedor común, eres el dueño de una gran corporación que debe aliarse con otros para dominar la ciudad tecnológica.</p>
+          <p>El juego utiliza una <strong>arquitectura cruzada moderna</strong>: El tablero general se muestra en un computador (Host), mientras cada jugador negocia en secreto desde su propio <strong>smartphone</strong>.</p>
+        </div>
+        <div class="card">
+          <h3>Modelo B2B Educativo</h3>
+          <p>El <strong>cliente real</strong> es el Colegio o Institución Educativa. Es un kit pedagógico que se compra para que las clases de emprendimiento sean interactivas.</p>
+          <p>¿Por qué el modelo es B2B? Porque dentro del juego mismo, las empresas no le venden a personas, se venden servicios entre ellas creando redes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHA TÉCNICA -->
+    <section>
+      <h2>Ficha Técnica del Proyecto</h2>
+      <table>
+        <tbody>
+          <tr>
+            <th>Fecha</th>
+            <td>Abril 2026</td>
+          </tr>
+          <tr>
+            <th>Proyecto</th>
+            <td class="highlight">City Venture: B2B Connect</td>
+          </tr>
+          <tr>
+            <th>Sector / Industria</th>
+            <td>Tercer sector / Educación / EdTech (Tecnología Educativa) y Gamificación.</td>
+          </tr>
+          <tr>
+            <th>Segmento de clientes (B2B)</th>
+            <td>Instituciones educativas, Secretarías de Educación y cajas de compensación. <em>(Perfil del comprador: Rector o Director Administrativo que busca diferenciar su colegio).</em></td>
+          </tr>
+          <tr>
+            <th>Usuarios Finales</th>
+            <td>Niños y adolescentes entre los <strong>10 y 13 años</strong> (requerido para comprender transacciones y negociación).</td>
+          </tr>
+          <tr>
+            <th>Expertos temáticos</th>
+            <td>Ingenieros de software (para la lógica Cross-Screen), emprendedores y pedagogos especialistas en metodologías activas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- EL JUEGO AL DETALLE -->
+    <section>
+      <h2>¿Cómo se juega? La Experiencia</h2>
+      
+      <div class="card" style="margin-bottom: 25px;">
+        <h3>1. La Ciudad de los Distritos</h3>
+        <p>El tablero representa una metrópolis futurista. Los jugadores no compran "calles", adquieren <strong>Sectores de Servicio</strong>:</p>
+        <ul class="tech-list">
+          <li><strong>Sector Energía:</strong> Plantas Solares, Redes Inteligentes.</li>
+          <li><strong>Sector Logística:</strong> Drones de Entrega, Transporte Autónomo.</li>
+          <li><strong>Sector Software:</strong> Apps Móviles, Ciberseguridad.</li>
+          <li><strong>Sector Creativo:</strong> Agencias, Marcas Globales.</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>2. Renta Dinámica (El Mercado)</h3>
+          <p>Cuando caes en la propiedad de un rival, no pagas una cuota estática. Se lanza el <strong>Dado de Mercado (Market Index)</strong>:</p>
+          <ul class="tech-list">
+            <li><strong>Recesión (1-2):</strong> La economía cae, la renta es baja.</li>
+            <li><strong>Estable (3-4):</strong> Todo normal.</li>
+            <li><strong>Auge (5-6):</strong> El sector se dispara, ¡pagas mucho más!</li>
+          </ul>
+          <p>Esto mantiene la tensión y refleja la vida real de los negocios.</p>
+        </div>
+
+        <div class="card">
+          <h3>3. Fase de Negociación B2B</h3>
+          <p>Al final del turno, se abre una ventana de 30 segundos (en los celulares). Es el momento de la verdad.</p>
+          <p><em>"Si me cobras la mitad de renta ahora, yo te doy transporte gratis por 3 turnos"</em>.</p>
+          <p>Quienes firman contratos reciben un <strong>Bono de Conectividad</strong>. ¡El juego premia la colaboración inteligente!</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Mecánicas Avanzadas (Implementadas en Software)</h2>
+      
+      <div class="card" style="margin-bottom: 25px;">
+        <h3>Cartas "Connect" (Eventos Ágiles)</h3>
+        <p>No existe la "Suerte" tradicional. Los jugadores roban Cartas Connect a su celular que agrupan estrategias corporativas reales:</p>
+        <ul class="tech-list">
+          <li><strong>Outsourcing:</strong> Obligas a otro a pagar por ti.</li>
+          <li><strong>Joint Venture:</strong> Dos jugadores compran a medias un terreno gigante.</li>
+          <li><strong>Fusión:</strong> Cambias una empresita por un monopolio pagando la diferencia.</li>
+          <li><strong>Ciberataque:</strong> Hackeas a un rival para que pierda su turno.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Los 8 CEOs Asimétricos</h3>
+        <p>Al iniciar, cada niño recibe un rol único que le da orgullo y herramientas diferentes:</p>
+        <div class="roles-grid" style="margin-top: 15px;">
+          <div class="role-badge">⚡ CEO de Energía</div>
+          <div class="role-badge">💻 CEO de Software</div>
+          <div class="role-badge">📦 CEO de Logística</div>
+          <div class="role-badge">🎨 CEO Creativo</div>
+          <div class="role-badge">🏦 CEO Financiero</div>
+          <div class="role-badge">♟️ CEO Estratégico</div>
+          <div class="role-badge">🤝 CEO Relaciones</div>
+          <div class="role-badge">🏭 CEO Industrial</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>🎯 ¿Cómo se Gana? (Venture Points)</h2>
+      <p>El éxito de la ciudad no es solo hacer dinero. El objetivo es alcanzar los <strong>10 Venture Points (VP)</strong> para tener el derecho de construir la megaestructura <em>Venture Tower</em>.</p>
+      <ul class="tech-list">
+        <li><strong>Capital:</strong> Haz mucho dinero para ganar VPs.</li>
+        <li><strong>Diplomacia:</strong> Cierra tratos B2B en el celular para ganar VPs de colaboración.</li>
+        <li><strong>Fusión:</strong> Domina sectores completos del tablero.</li>
+        <li><strong>Agresividad:</strong> Destruye financieramente al rival oculto que se te asignó.</li>
+      </ul>
+    </section>
+
+    <header style="border-bottom: none; border-top: 1px solid var(--glass-border); padding-top: 40px; margin-top: 60px;">
+      <p class="subtitle" style="color: var(--text-dim); font-size: 0.9rem;">> SISTEMA EN LÍNEA OPERATIVO // AUDITORÍA COMPLETADA</p>
+    </header>
+
+  </div>
+
+</body>
+</html>
