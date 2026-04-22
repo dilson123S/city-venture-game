@@ -317,23 +317,28 @@
   let lastRenderedHTML = "";
 
   function render() {
-    const view = state.view;
-    const mainHTML = !view ? renderLoading() : renderMode(view);
-    if (mainHTML !== lastRenderedHTML) {
-      lastRenderedHTML = mainHTML;
-      app.innerHTML = mainHTML;
+    try {
+      const view = state.view;
+      const mainHTML = !view ? renderLoading() : renderMode(view);
+      if (mainHTML !== lastRenderedHTML) {
+        lastRenderedHTML = mainHTML;
+        app.innerHTML = mainHTML;
+      }
+      // Toasts are rendered in a separate fixed container to not invalidate main cache
+      let toastLayer = document.getElementById("toast-layer");
+      if (!toastLayer) {
+        toastLayer = document.createElement("div");
+        toastLayer.id = "toast-layer";
+        document.body.appendChild(toastLayer);
+      }
+      toastLayer.innerHTML = renderToasts();
+      updateHandModal(view);
+      updateLogDrawer(view);
+      syncQueryState();
+    } catch (err) {
+      console.error("RENDER ERROR:", err);
+      app.innerHTML = `<pre style="color:red;padding:20px;">RENDER ERROR: ${err.message}\n${err.stack}</pre>`;
     }
-    // Toasts are rendered in a separate fixed container to not invalidate main cache
-    let toastLayer = document.getElementById("toast-layer");
-    if (!toastLayer) {
-      toastLayer = document.createElement("div");
-      toastLayer.id = "toast-layer";
-      document.body.appendChild(toastLayer);
-    }
-    toastLayer.innerHTML = renderToasts();
-    updateHandModal(view);
-    updateLogDrawer(view);
-    syncQueryState();
   }
 
   function renderMode(view) {
