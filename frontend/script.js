@@ -314,12 +314,23 @@
     }, 2800);
   }
 
+  let lastRenderedHTML = "";
+
   function render() {
     const view = state.view;
-    app.innerHTML = `
-      ${renderToasts()}
-      ${!view ? renderLoading() : renderMode(view)}
-    `;
+    const mainHTML = !view ? renderLoading() : renderMode(view);
+    if (mainHTML !== lastRenderedHTML) {
+      lastRenderedHTML = mainHTML;
+      app.innerHTML = mainHTML;
+    }
+    // Toasts are rendered in a separate fixed container to not invalidate main cache
+    let toastLayer = document.getElementById("toast-layer");
+    if (!toastLayer) {
+      toastLayer = document.createElement("div");
+      toastLayer.id = "toast-layer";
+      document.body.appendChild(toastLayer);
+    }
+    toastLayer.innerHTML = renderToasts();
     updateHandModal(view);
     updateLogDrawer(view);
     syncQueryState();
