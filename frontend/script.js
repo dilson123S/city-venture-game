@@ -10,6 +10,7 @@
   const state = {
     view: null,
     toasts: [],
+    showHandModal: false,
     dice: {
       face: 1,
       spinning: false,
@@ -157,6 +158,14 @@
         });
         return;
       }
+      case "toggle-hand":
+        state.showHandModal = !state.showHandModal;
+        render();
+        return;
+      case "close-hand":
+        state.showHandModal = false;
+        render();
+        return;
       default:
     }
   }
@@ -299,6 +308,7 @@
     app.innerHTML = `
       ${renderToasts()}
       ${!view ? renderLoading() : renderMode(view)}
+      ${state.showHandModal && view && view.self && view.self.hand ? renderHandModal(view) : ""}
     `;
     syncQueryState();
   }
@@ -633,10 +643,9 @@
                   <span>Conexiones</span>
                   <strong>${publicSelf.connections || 0}</strong>
                 </article>
-                <article class="hud-stat">
-                  <span>Cartas</span>
-                  <strong>${self.hand.length}</strong>
-                </article>
+                <button data-action="toggle-hand" class="primary" type="button" style="padding: 16px 12px; font-size: 1.1rem; box-shadow: 0 0 20px rgba(85,239,255,0.2); margin: 6px 0; border-radius:12px;">
+                  🎴 Cartas (${self.hand.length})
+                </button>
                 <article class="hud-stat">
                   <span>Propiedades</span>
                   <strong>${escapeHtml(propertyNames)}</strong>
@@ -1948,4 +1957,123 @@
   window.addEventListener("beforeunload", () => {
     window.clearInterval(uiClock);
   });
+
+  // ─── CARD UI MODAL ───────────────────────────────────────
+  function renderHandModal(view) {
+    const hand = view.self.hand || [];
+    return `
+      <div class="hand-modal-overlay" data-action="close-hand" onclick="if(event.target === this) this.querySelector('[data-action=close-hand]').click()">
+        <div class="hand-modal">
+          <div class="hand-modal-header">
+            <h2 class="hand-modal-title">🎴 Mano (${hand.length})</h2>
+            <button data-action="close-hand" class="hand-modal-close" type="button">X CERRAR</button>
+          </div>
+          <div class="hand-modal-body">
+            ${hand.length === 0 ? '<div class="empty-state" style="margin-top:20px;">No tienes cartas en la mano. Cae en una casilla Connect Card para obtenerlas.</div>' : `
+              <div class="card-list-grid">
+                ${hand.map(card => `
+                  <article class="playing-card-item" data-category="${escapeAttribute(card.category)}">
+                    <span class="playing-card-category">${escapeHtml(card.category)}</span>
+                    <h3 class="playing-card-title">${escapeHtml(card.title)}</h3>
+                    <p class="playing-card-text">${escapeHtml(card.text)}</p>
+                    <form data-form="card-play" class="card-target-form">
+                      <input type="hidden" name="instanceId" value="${escapeAttribute(card.instanceId)}" />
+                      ${renderCardForm(card, view)}
+                      <button type="submit">🃏 Jugar Carta</button>
+                    </form>
+                  </article>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCardForm(card, view) {
+    const target = card.target;
+    if (target === "self" || target === "global") {
+      return '';
+    }
+    
+    const opponents = view.session.players.filter(p => p.id !== view.self.id);
+    const selfProperties = view.self.properties || [];
+    const availableProperties = getFreeProperties(view);
+
+    let html = '';
+    
+    if (target === "player") {
+      html += `
+        <select name="targetPlayerId" required>
+          <option value="">Apunta a un rival...</option>
+          ${opponents.map(p => `<option value="${escapeAttribute(p.id)}">${escapeHtml(p.name)} (${escapeHtml(p.roleName)})</option>`).join('')}
+        </select>
+      `;
+      if (card.id === "data-breach") {
+         html += `
+            <select name="discardIndex">
+              <option value="0">Descartar 1ra carta de su mano</option>
+              <option value="1">Descartar 2da carta</option>
+              <option value="2">Descartar 3ra carta</option>
+            </select>
+         `;
+      }
+    } else if (target === "owned-property") {
+      html += `
+        <select name="targetTileId" required>
+          <option value="">Tu propiedad objetivo...</option>
+          ${selfProperties.map(p => `<option value="${escapeAttribute(p.id)}">${escapeHtml(p.name)}</option>`).join('')}
+        </select>
+      `;
+    } else if (target === "joint-venture") {
+      html += `
+        <select name="partnerPlayerId" required>
+          <option value="">Elige un socio...</option>
+          ${opponents.map(p => `<option value="${escapeAttribute(p.id)}">${escapeHtml(p.name)}</option>`).join('')}
+        </select>
+        <select name="targetTileId" required>
+          <option value="">Propiedad libre a comprar...</option>
+          ${availableProperties.map(p => `<option value="${escapeAttribute(p.id)}">${escapeHtml(p.name)} - ${formatCredits(p.price)}</option>`).join('')}
+        </select>
+      `;
+    } else if (target === "merge") {
+      html += `
+        <select name="sourceTileId" required>
+          <option value="">Entregar propiedad tuya...</option>
+          ${selfProperties.map(p => `<option value="${escapeAttribute(p.id)}">${escapeHtml(p.name)}</option>`).join('')}
+        </select>
+        <select name="targetUpgradeTileId" required>
+          <option value="">Propiedad libre de MAYOR valor...</option>
+          ${availableProperties.map(p => `<option value="${escapeAttribute(p.id)}">${escapeHtml(p.name)} - ${formatCredits(p.price)}</option>`).join('')}
+        </select>
+      `;
+    } else if (target === "sector") {
+      html += `
+        <select name="sectorName" required>
+          <option value="">Sector a patentar...</option>
+          <option value="Energia">Energia</option>
+          <option value="Logistica">Logistica</option>
+          <option value="Software">Software</option>
+          <option value="Creativo">Creativo</option>
+        </select>
+      `;
+    } else if (target === "hostile-takeover") {
+       const rivalProperties = [];
+       view.session.players.forEach(p => {
+         if (p.id !== view.self.id) {
+            if (p.properties) {
+               p.properties.forEach(t => rivalProperties.push({...t, ownerName: p.name}));
+            }
+         }
+       });
+       html += `
+        <select name="targetTileId" required>
+          <option value="">Propiedad rival a adquirir...</option>
+          ${rivalProperties.map(p => `<option value="${escapeAttribute(p.id)}">${escapeHtml(p.name)} - de ${escapeHtml(p.ownerName)}</option>`).join('')}
+        </select>
+       `;
+    }
+    return html;
+  }
 })();

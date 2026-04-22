@@ -1427,3 +1427,157 @@ button:disabled { cursor: not-allowed; opacity: 0.4; }
     z-index: 999;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   CARD HAND UI
+   ═══════════════════════════════════════════════════ */
+
+.hand-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 10, 18, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  animation: fade-in 300ms ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hand-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--neon-cyan);
+  border-radius: var(--radius-xl);
+  width: min(800px, 100%);
+  max-width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(85,239,255,0.15);
+}
+
+.hand-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(85, 239, 255, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.hand-modal-title {
+  margin: 0;
+  font-family: 'Orbitron', monospace;
+  font-size: 1.4rem;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.hand-modal-close {
+  background: rgba(255, 91, 91, 0.1);
+  border: 1px solid rgba(255, 91, 91, 0.4);
+  color: var(--neon-red);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.hand-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.card-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.playing-card-item {
+  position: relative;
+  background: linear-gradient(145deg, rgba(16, 24, 38, 0.9), rgba(8, 14, 24, 0.9));
+  border: 1px solid var(--card-color-border, rgba(85, 239, 255, 0.3));
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), inset 0 2px 10px var(--card-color-glow, rgba(85,239,255,0.05));
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  overflow: hidden;
+}
+
+.playing-card-item::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--card-color, var(--neon-cyan));
+}
+
+.playing-card-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 2px 20px var(--card-color-glow, rgba(85,239,255,0.1));
+}
+
+.playing-card-title {
+  margin: 0; font-family: 'Orbitron', monospace; font-size: 1.1rem;
+  color: #fff;
+}
+
+.playing-card-category {
+  display: inline-block;
+  font-size: 0.7rem; font-family: 'Share Tech Mono', monospace;
+  text-transform: uppercase; color: var(--card-color, var(--text-soft));
+  letter-spacing: 0.1em;
+  padding: 2px 8px; border-radius: 4px;
+  background: rgba(0,0,0,0.2); border: 1px solid var(--card-color-border, rgba(255,255,255,0.1));
+  margin-right: auto;
+}
+
+.playing-card-text {
+  font-size: 0.85rem; color: var(--text-soft); line-height: 1.4; flex: 1;
+}
+
+/* Category Colors */
+.playing-card-item[data-category="Ataque"] {
+  --card-color: var(--neon-red); --card-color-border: rgba(255, 91, 91, 0.4); --card-color-glow: rgba(255, 91, 91, 0.1);
+}
+.playing-card-item[data-category="Alianza"] {
+  --card-color: var(--neon-mint); --card-color-border: rgba(68, 240, 199, 0.4); --card-color-glow: rgba(68, 240, 199, 0.1);
+}
+.playing-card-item[data-category="Economia"] {
+  --card-color: var(--neon-blue); --card-color-border: rgba(77, 139, 255, 0.4); --card-color-glow: rgba(77, 139, 255, 0.1);
+}
+.playing-card-item[data-category="Estrategia"] {
+  --card-color: #ff9ac7; --card-color-border: rgba(255, 154, 199, 0.4); --card-color-glow: rgba(255, 154, 199, 0.1);
+}
+.playing-card-item[data-category="Expansion"] {
+  --card-color: var(--neon-amber); --card-color-border: rgba(255, 200, 74, 0.4); --card-color-glow: rgba(255, 200, 74, 0.1);
+}
+.playing-card-item[data-category="Evento"] {
+  --card-color: #a0a0a0; --card-color-border: rgba(160, 160, 160, 0.4); --card-color-glow: rgba(160, 160, 160, 0.1);
+}
+
+.card-target-form {
+  display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);
+}
+
+.card-target-form select {
+  padding: 8px; font-size: 0.8rem; border-radius: 4px;
+}
+
+.card-target-form button {
+  background: var(--card-color, var(--neon-cyan));
+  color: #000;
+  padding: 8px; font-size: 0.85rem;
+}
