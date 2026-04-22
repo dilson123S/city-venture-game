@@ -11,6 +11,7 @@
     view: null,
     toasts: [],
     showHandModal: false,
+    showLogDrawer: false,
     dice: {
       face: 1,
       spinning: false,
@@ -166,6 +167,14 @@
         state.showHandModal = false;
         render();
         return;
+      case "toggle-log-drawer":
+        state.showLogDrawer = !state.showLogDrawer;
+        updateLogDrawer(state.view);
+        return;
+      case "close-log-drawer":
+        state.showLogDrawer = false;
+        updateLogDrawer(state.view);
+        return;
       default:
     }
   }
@@ -312,6 +321,7 @@
       ${!view ? renderLoading() : renderMode(view)}
     `;
     updateHandModal(view);
+    updateLogDrawer(view);
     syncQueryState();
   }
 
@@ -485,77 +495,147 @@
     const totalPlayers = view.session.players.length;
     const everyoneJoined = joinedCount === totalPlayers;
     const session = view.session;
-    return `
-      <section class="host-shell">
-        <section class="board-panel">
-          <div class="board-header">
-            <div>
-              <p class="eyebrow">Host Console</p>
-              <h1 class="board-title">City Venture <span>Live Session ${escapeHtml(session.id)}</span></h1>
-              <p class="section-copy">${escapeHtml(session.turn.message || "")}</p>
+
+    // In lobby, use legacy layout
+    if (inLobby) {
+      return `
+        <section class="host-game-layout">
+          <div class="host-topbar">
+            <div class="host-topbar-left">
+              <h1 class="host-topbar-title">City Venture</h1>
+              <span class="host-topbar-session">Session ${escapeHtml(session.id)}</span>
             </div>
-            <div class="toolbar">
-              ${
-                inLobby
-                  ? `<button data-action="host-start-game" class="primary" type="button" ${
-                      everyoneJoined ? "" : "disabled"
-                    }>Iniciar partida</button>`
-                  : ""
-              }
-              <button data-action="host-reset-session" class="danger" type="button">Reiniciar sesion</button>
-              <button data-action="host-logout" class="ghost" type="button">Cerrar sesion host</button>
+            <div class="host-topbar-actions">
+              <button data-action="host-start-game" class="primary" type="button" ${everyoneJoined ? "" : "disabled"}>Iniciar partida</button>
+              <button data-action="host-reset-session" class="danger" type="button">Reiniciar</button>
+              <button data-action="host-logout" class="ghost" type="button">Salir</button>
             </div>
           </div>
-
-          ${inLobby ? renderHostLobbySetup(view, { joinedCount, totalPlayers, everyoneJoined }) : ""}
-
-          ${!inLobby || everyoneJoined ? renderBoard(view, "host") : ""}
-
-          ${
-            !inLobby || everyoneJoined
-              ? `
-                ${renderMarketIndexWidget(session)}
-
-                <div class="status-grid-4">
-                  <article class="stat-strip">
-                    <p class="muted">Turno actual</p>
-                    <div class="stat-value">${escapeHtml(currentPlayer?.name || "Sin turno")}</div>
-                  </article>
-                  <article class="stat-strip">
-                    <p class="muted">Ronda</p>
-                    <div class="stat-value">${session.round}</div>
-                  </article>
-                  <article class="stat-strip">
-                    <p class="muted">Indice de Mercado</p>
-                    <div class="stat-value">${escapeHtml(session.marketIndex?.name || "Estable")}</div>
-                  </article>
-                  <article class="stat-strip">
-                    <p class="muted">Evento global</p>
-                    <div class="stat-value">${escapeHtml(session.activeEvent?.name || "Sin evento")}</div>
-                  </article>
-                </div>
-
-                ${renderSectorDomainsPanel(session)}
-
-                <div class="panel-grid">
-                  <article class="panel">
-                    <p class="eyebrow">Empresas</p>
-                    <div class="players-grid">${session.players
-                      .map((player) => renderPublicPlayerCard(view, player))
-                      .join("")}</div>
-                  </article>
-                  <article class="panel">
-                    <p class="eyebrow">Bitacora</p>
-                    <div class="timeline">${session.log
-                      .map((entry) => `<article class="timeline-item"><p>${escapeHtml(entry)}</p></article>`)
-                      .join("")}</div>
-                  </article>
-                </div>
-              `
-              : ""
-          }
+          <div style="overflow-y:auto;">
+            ${renderHostLobbySetup(view, { joinedCount, totalPlayers, everyoneJoined })}
+            ${everyoneJoined ? renderBoard(view, "host") : ""}
+          </div>
         </section>
+      `;
+    }
+
+    // Active game: 2-column layout
+    return `
+      <section class="host-game-layout">
+        <div class="host-topbar">
+          <div class="host-topbar-left">
+            <h1 class="host-topbar-title">City Venture</h1>
+            <span class="host-topbar-session">Live Session ${escapeHtml(session.id)}</span>
+          </div>
+          <div class="host-topbar-actions">
+            <button data-action="host-reset-session" class="danger" type="button">Reiniciar</button>
+            <button data-action="host-logout" class="ghost" type="button">Salir</button>
+          </div>
+        </div>
+
+        <div class="host-main-area">
+          <div class="host-board-area">
+            ${renderBoard(view, "host")}
+          </div>
+          <aside class="host-sidebar">
+            ${renderHostSidebar(view, session, currentPlayer)}
+          </aside>
+        </div>
       </section>
+
+      <button data-action="toggle-log-drawer" class="log-drawer-btn" type="button">📜 Bitacora (${session.log.length})</button>
+    `;
+  }
+
+  function renderHostSidebar(view, session, currentPlayer) {
+    const mi = session.marketIndex || { id: "stable", name: "Estable", multiplier: 1.0 };
+    const marketIcons = { recession: "📉", stable: "📊", boom: "📈" };
+    const turnMsg = session.turn?.message || "";
+
+    return `
+      <div class="sidebar-section">
+        <p class="eyebrow">Estado de Partida</p>
+        <div class="sidebar-stat-row">
+          <span class="sidebar-stat-label">Turno</span>
+          <span class="sidebar-stat-value active-turn">${escapeHtml(currentPlayer?.name || "Sin turno")}</span>
+        </div>
+        <div class="sidebar-stat-row">
+          <span class="sidebar-stat-label">Ronda</span>
+          <span class="sidebar-stat-value">${session.round}</span>
+        </div>
+        <div class="sidebar-stat-row">
+          <span class="sidebar-stat-label">Fase</span>
+          <span class="sidebar-stat-value">${escapeHtml(session.turn?.phase || "—")}</span>
+        </div>
+        ${turnMsg ? `<p class="sidebar-message">${escapeHtml(turnMsg)}</p>` : ""}
+      </div>
+
+      <div class="sidebar-section">
+        <p class="eyebrow">${marketIcons[mi.id] || "📊"} Mercado</p>
+        <div class="sidebar-stat-row">
+          <span class="sidebar-stat-label">Indice</span>
+          <span class="sidebar-stat-value">${escapeHtml(mi.name)}</span>
+        </div>
+        <div class="sidebar-stat-row">
+          <span class="sidebar-stat-label">Multiplicador</span>
+          <span class="sidebar-stat-value">x${mi.multiplier}</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="eyebrow">🌐 Evento Global</p>
+        <div class="sidebar-stat-row">
+          <span class="sidebar-stat-label">Activo</span>
+          <span class="sidebar-stat-value">${escapeHtml(session.activeEvent?.name || "Sin evento")}</span>
+        </div>
+      </div>
+
+      ${renderSidebarSectorDomains(session)}
+
+      <div class="sidebar-section">
+        <p class="eyebrow">CEOs Conectados</p>
+        <div class="compact-ceo-grid">
+          ${session.players.map((player) => renderCompactPlayerCard(view, player, session.currentPlayerId)).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSidebarSectorDomains(session) {
+    const domains = session.sectorDomains || {};
+    const entries = Object.entries(domains);
+    if (!entries.length) return "";
+    return `
+      <div class="sidebar-section">
+        <p class="eyebrow">👑 Dominios de Sector</p>
+        <div class="sector-badges">
+          ${entries.map(([sector, ownerId]) => {
+            const owner = session.players.find((p) => p.id === ownerId);
+            return `<span class="sector-badge ${escapeAttribute(sector.toLowerCase())}">👑 ${escapeHtml(sector)}: ${escapeHtml(owner?.name || "?")}</span>`;
+          }).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCompactPlayerCard(view, player, currentPlayerId) {
+    const isCurrent = player.id === currentPlayerId;
+    const color = player.color || "var(--neon-cyan)";
+    const badge = player.tokenBadge || initials(player.name);
+    return `
+      <div class="compact-ceo-card ${isCurrent ? "is-current-turn" : ""}">
+        <div class="ceo-token-mini" style="background: ${escapeAttribute(color)};">
+          ${escapeHtml(badge)}
+          <span class="ceo-status-dot ${player.connected ? "online" : "offline"}"></span>
+        </div>
+        <div class="ceo-info-mini">
+          <div class="ceo-name-mini">${escapeHtml(player.name)}</div>
+          <div class="ceo-stats-mini">
+            <span>💰${formatCredits(player.credits)}</span>
+            <span>⭐${player.venturePoints || 0}</span>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -2108,5 +2188,48 @@
        `;
     }
     return html;
+  }
+
+  // ─── LOG DRAWER ─────────────────────────────────────────
+  function updateLogDrawer(view) {
+    let drawerEl = document.getElementById("log-drawer-layer");
+    if (!state.showLogDrawer || !view || !view.session) {
+      if (drawerEl) {
+        drawerEl.querySelector(".log-drawer")?.classList.remove("open");
+        drawerEl.querySelector(".log-drawer-overlay")?.classList.remove("open");
+        setTimeout(() => { if (drawerEl) drawerEl.remove(); }, 350);
+      }
+      return;
+    }
+    if (!drawerEl) {
+      drawerEl = document.createElement("div");
+      drawerEl.id = "log-drawer-layer";
+      document.body.appendChild(drawerEl);
+      drawerEl.addEventListener("click", handleClick);
+    }
+    drawerEl.innerHTML = renderLogDrawerHTML(view);
+    requestAnimationFrame(() => {
+      drawerEl.querySelector(".log-drawer")?.classList.add("open");
+      drawerEl.querySelector(".log-drawer-overlay")?.classList.add("open");
+    });
+  }
+
+  function renderLogDrawerHTML(view) {
+    const log = view.session.log || [];
+    return `
+      <div class="log-drawer-overlay" data-action="close-log-drawer"></div>
+      <div class="log-drawer">
+        <div class="log-drawer-header">
+          <h2 class="log-drawer-title">📜 Bitacora</h2>
+          <button data-action="close-log-drawer" class="log-drawer-close" type="button">CERRAR</button>
+        </div>
+        <div class="log-drawer-body">
+          ${log.length === 0
+            ? '<p style="color: var(--text-dim); text-align: center; font-size: 0.8rem;">Sin actividad registrada.</p>'
+            : log.map(entry => `<p class="log-entry">${escapeHtml(entry)}</p>`).join("")
+          }
+        </div>
+      </div>
+    `;
   }
 })();
