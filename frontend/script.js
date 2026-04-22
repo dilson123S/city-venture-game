@@ -310,8 +310,8 @@
     app.innerHTML = `
       ${renderToasts()}
       ${!view ? renderLoading() : renderMode(view)}
-      ${state.showHandModal && view && view.self && view.self.hand ? renderHandModal(view) : ""}
     `;
+    updateHandModal(view);
     syncQueryState();
   }
 
@@ -1966,7 +1966,28 @@
   });
 
   // ─── CARD UI MODAL ───────────────────────────────────────
-  function renderHandModal(view) {
+  function updateHandModal(view) {
+    let modalEl = document.getElementById("hand-modal-layer");
+    if (!state.showHandModal || !view || !view.self || !view.self.hand) {
+      if (modalEl) modalEl.remove();
+      return;
+    }
+    const handSig = view.self.hand.map(c => c.instanceId).join(",");
+    if (modalEl && modalEl.dataset.handSig === handSig) {
+      return; 
+    }
+    if (!modalEl) {
+      modalEl = document.createElement("div");
+      modalEl.id = "hand-modal-layer";
+      document.body.appendChild(modalEl);
+      modalEl.addEventListener("click", handleClick);
+      modalEl.addEventListener("submit", handleSubmit);
+    }
+    modalEl.dataset.handSig = handSig;
+    modalEl.innerHTML = renderHandModalHTML(view);
+  }
+
+  function renderHandModalHTML(view) {
     const hand = view.self.hand || [];
     return `
       <div class="hand-modal-overlay" onclick="if(event.target === this) this.querySelector('.hand-modal-close').click()">
