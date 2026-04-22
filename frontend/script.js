@@ -979,14 +979,19 @@
 
   function renderInviteCard(invite, view) {
     const player = getPublicPlayer(view, invite.playerId);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&color=020a12&bgcolor=55efff&data=${encodeURIComponent(invite.url)}`;
     return `
-      <article class="invite-card">
+      <article class="invite-card" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
         <p class="eyebrow">Asiento ${invite.seatNumber}</p>
-        <h3 class="section-title">${escapeHtml(player?.name || `CEO ${invite.seatNumber}`)}</h3>
+        <h3 class="section-title">${escapeHtml(player?.name || "CEO " + invite.seatNumber)}</h3>
         <p class="section-copy">${escapeHtml(player?.roleName || "")}</p>
-        <a class="invite-link mono" href="${escapeAttribute(invite.url)}">${escapeHtml(invite.url)}</a>
-        <div class="button-row">
-          <button data-action="copy-link" data-url="${escapeAttribute(invite.url)}" class="secondary" type="button">Copiar enlace</button>
+        
+        <div style="margin: 14px 0; background: var(--neon-cyan); padding: 10px; border-radius: 12px; display: inline-block; box-shadow: 0 0 20px rgba(85,239,255,0.3);">
+          <img src="${qrUrl}" alt="QR Asiento ${invite.seatNumber}" width="160" height="160" style="display: block; mix-blend-mode: multiply;" />
+        </div>
+        
+        <div class="button-row" style="margin-top:auto;">
+          <button data-action="copy-link" data-url="${escapeAttribute(invite.url)}" class="ghost" type="button" style="font-size: 0.75rem; padding: 6px 12px;">Copiar Enlace Manual</button>
         </div>
       </article>
     `;
