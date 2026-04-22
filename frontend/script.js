@@ -228,6 +228,8 @@
           action: "play-card",
           payload: normalizePayload(data),
         });
+        state.showHandModal = false;
+        render();
         return;
       default:
     }
@@ -1962,7 +1964,7 @@
   function renderHandModal(view) {
     const hand = view.self.hand || [];
     return `
-      <div class="hand-modal-overlay" data-action="close-hand" onclick="if(event.target === this) this.querySelector('[data-action=close-hand]').click()">
+      <div class="hand-modal-overlay" onclick="if(event.target === this) this.querySelector('.hand-modal-close').click()">
         <div class="hand-modal">
           <div class="hand-modal-header">
             <h2 class="hand-modal-title">🎴 Mano (${hand.length})</h2>
