@@ -2090,8 +2090,13 @@
        const rivalProperties = [];
        view.session.players.forEach(p => {
          if (p.id !== view.self.id) {
-            if (p.properties) {
-               p.properties.forEach(t => rivalProperties.push({...t, ownerName: p.name}));
+            if (p.propertyIds) {
+               p.propertyIds.forEach(tid => {
+                  const tile = view.session.tiles.find(t => t.id === tid);
+                  if (tile) {
+                     rivalProperties.push({...tile, ownerName: p.name});
+                  }
+               });
             }
          }
        });
