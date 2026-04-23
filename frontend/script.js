@@ -174,6 +174,15 @@
         return;
       case "toggle-b2b":
         state.showB2BForm = !state.showB2BForm;
+        if (!state.showB2BForm) state.negotiationTargetId = null; // Clear when closing
+        scheduleRender();
+        return;
+      case "select-negotiation-target":
+        state.negotiationTargetId = button.dataset.targetId;
+        scheduleRender();
+        return;
+      case "clear-negotiation-target":
+        state.negotiationTargetId = null;
         scheduleRender();
         return;
       case "toggle-log-drawer":
@@ -240,6 +249,9 @@
       case "contract":
         socket.emit("contract:propose", normalizePayload(data));
         form.reset();
+        state.negotiationTargetId = null; // Reset for next time
+        state.showB2BForm = false; // Close the B2B form automatically
+        scheduleRender();
         return;
       case "card-play":
         socket.emit("player:action", {
@@ -1540,76 +1552,103 @@
     }
 
     const otherPlayers = view.session.players.filter((player) => player.id !== self.id);
-    const requestedProperties = otherPlayers.flatMap((player) =>
-      player.propertyIds.map((tileId) => ({
-        ownerId: player.id,
-        tileId,
-        ownerName: player.name,
-      })),
-    );
+
+    // STEP 1: SELECT TARGET PLAYER
+    if (!state.negotiationTargetId) {
+      return `
+        <div class="b2b-target-selection">
+          <p class="section-copy" style="text-align: center; margin-bottom: 20px; font-size: 1.1rem;">\ud83e\udd14 \u00bfCon qui\u00e9n quieres negociar?</p>
+          <div class="target-cards-grid">
+            ${otherPlayers.map((player) => `
+              <button data-action="select-negotiation-target" data-target-id="${escapeAttribute(player.id)}" class="target-card" type="button" style="border-bottom: 4px solid ${player.color || 'var(--neon-cyan)'}">
+                <div class="target-avatar" style="font-size: 3rem; margin-bottom: 10px;">${player.role?.emoji || '\ud83d\udc64'}</div>
+                <div class="target-name" style="font-weight: bold; font-size: 1.1rem; color: var(--text);">${escapeHtml(player.name)}</div>
+                <div class="target-role" style="font-size: 0.8rem; color: var(--text-soft);">${escapeHtml(player.role?.name || 'Oponente')}</div>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    // STEP 2: COMPOSE OFFER (SPLIT SCREEN)
+    const targetPlayer = otherPlayers.find(p => p.id === state.negotiationTargetId);
+    if (!targetPlayer) {
+      state.negotiationTargetId = null; // invalid target, reset
+      return renderContractComposer(view);
+    }
+
+    const requestedProperties = targetPlayer.propertyIds.map((tileId) => ({
+      ownerId: targetPlayer.id,
+      tileId,
+      ownerName: targetPlayer.name,
+    }));
     const b2bTypes = view.session.b2bOfferTypes || [];
 
     return `
-      <form data-form="contract" class="contract-composer">
-        <p class="eyebrow">Nuevo contrato</p>
-        <div class="field-inline">
-          <div class="field">
-            <label for="targetPlayerId">Enviar a</label>
-            <select id="targetPlayerId" name="targetPlayerId">
-              ${otherPlayers.map((player) => `<option value="${escapeAttribute(player.id)}">${escapeHtml(player.name)}</option>`).join("")}
-            </select>
+      <form data-form="contract" class="b2b-split-screen">
+        <div class="split-header">
+          <button data-action="clear-negotiation-target" class="ghost" type="button" style="padding: 6px; position: absolute; left: 10px;">\u2b05\ufe0f Volver</button>
+          <p class="eyebrow" style="margin: 0;">Negociando con ${escapeHtml(targetPlayer.name)}</p>
+        </div>
+
+        <input type="hidden" name="targetPlayerId" value="${escapeAttribute(targetPlayer.id)}" />
+        <input type="hidden" name="type" value="Acuerdo Personalizado" />
+
+        <div class="split-container">
+          <!-- LEFT: WHAT YOU OFFER -->
+          <div class="split-side offer-side">
+            <h3 class="split-title">\ud83d\udce4 Ofreces</h3>
+            <div class="split-content">
+              <div class="field">
+                <label for="offerCredits">Monedas a dar</label>
+                <div class="money-input-wrapper">
+                  <span class="money-symbol">\ud83d\udcb0</span>
+                  <input id="offerCredits" name="offerCredits" type="number" min="0" step="10" value="0" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="offerPropertyId">Propiedad a dar</label>
+                <select id="offerPropertyId" name="offerPropertyId">
+                  <option value="">(Ninguna)</option>
+                  ${self.soloProperties.map((tile) => `<option value="${escapeAttribute(tile.id)}">${escapeHtml(tile.name)}</option>`).join("")}
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="field">
-            <label for="contractType">Tipo de oferta</label>
-            <select id="contractType" name="type">
-              ${b2bTypes.length
-                ? b2bTypes.map((t) => `<option value="${escapeAttribute(t.name)}">${escapeHtml(t.name)}</option>`).join("")
-                : `
-                  <option>Acuerdo Comercial</option>
-                  <option>Pacto de Propiedad</option>
-                  <option>Alianza de Red</option>
-                  <option>Contrato a Plazo</option>
-                `
-              }
-            </select>
+
+          <div class="split-divider">
+            <div class="divider-icon">\u21c4</div>
+          </div>
+
+          <!-- RIGHT: WHAT YOU WANT -->
+          <div class="split-side request-side">
+            <h3 class="split-title">\ud83e\udd11 Quieres</h3>
+            <div class="split-content">
+              <div class="field">
+                <label for="requestCredits">Monedas a pedir</label>
+                <div class="money-input-wrapper">
+                  <span class="money-symbol">\ud83d\udcb0</span>
+                  <input id="requestCredits" name="requestCredits" type="number" min="0" step="10" value="0" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="requestPropertyId">Propiedad a pedir</label>
+                <select id="requestPropertyId" name="requestPropertyId">
+                  <option value="">(Ninguna)</option>
+                  ${requestedProperties.map((entry) => `<option value="${escapeAttribute(entry.tileId)}">${escapeHtml(getTile(view, entry.tileId).name)}</option>`).join("")}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="field-inline">
-          <div class="field">
-            <label for="offerCredits">Tus monedas ofrecidas</label>
-            <input id="offerCredits" name="offerCredits" type="number" min="0" step="10" value="0" />
+
+        <div class="split-footer">
+          <div class="field" style="margin-bottom: 12px; width: 100%;">
+            <input type="text" id="contractMessage" name="message" placeholder="A\u00f1ade un mensaje (opcional)..." style="width: 100%;" />
           </div>
-          <div class="field">
-            <label for="requestCredits">Creditos que pides</label>
-            <input id="requestCredits" name="requestCredits" type="number" min="0" step="10" value="0" />
-          </div>
+          <button class="primary" type="submit" style="width: 100%; font-size: 1.1rem; padding: 12px;">\ud83d\udce1 Enviar Oferta</button>
         </div>
-        <div class="field-inline">
-          <div class="field">
-            <label for="offerPropertyId">Propiedad que ofreces</label>
-            <select id="offerPropertyId" name="offerPropertyId">
-              <option value="">Sin propiedad</option>
-              ${self.soloProperties.map((tile) => `<option value="${escapeAttribute(tile.id)}">${escapeHtml(tile.name)}</option>`).join("")}
-            </select>
-          </div>
-          <div class="field">
-            <label for="requestPropertyId">Propiedad que solicitas</label>
-            <select id="requestPropertyId" name="requestPropertyId">
-              <option value="">Sin propiedad</option>
-              ${requestedProperties
-                .map(
-                  (entry) =>
-                    `<option value="${escapeAttribute(entry.tileId)}">${escapeHtml(entry.ownerName)} - ${escapeHtml(getTile(view, entry.tileId).name)}</option>`,
-                )
-                .join("")}
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label for="contractMessage">Mensaje</label>
-          <textarea id="contractMessage" name="message" placeholder="Describe el acuerdo, plazo o contexto del trato."></textarea>
-        </div>
-        <button class="primary" type="submit">Enviar contrato al otro dispositivo</button>
       </form>
     `;
   }
