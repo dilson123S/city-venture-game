@@ -437,7 +437,6 @@ button:disabled { cursor: not-allowed; opacity: 0.4; }
 .player-hud-canvas {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
   border-radius: var(--radius-xl);
   border: 1px solid rgba(85, 239, 255, 0.2);
   background:
@@ -450,9 +449,13 @@ button:disabled { cursor: not-allowed; opacity: 0.4; }
     0 30px 80px rgba(0, 0, 0, 0.6),
     var(--glow-lg);
   padding: 16px 18px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(85,239,255,0.1) transparent;
   backdrop-filter: blur(4px);
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-rows: auto 1fr;
   gap: 10px;
 }
@@ -485,7 +488,7 @@ button:disabled { cursor: not-allowed; opacity: 0.4; }
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr) 280px;
   gap: 18px;
-  height: 100%;
+  flex: 1;
 }
 
 @media (max-width: 1024px) {
@@ -1821,25 +1824,7 @@ button:disabled { cursor: not-allowed; opacity: 0.4; }
   .dice-orbit { width: min(140px, 40vw); }
 }
 
-@media (orientation: portrait) {
-  .player-hud-shell::after {
-    content: 'Gira tu dispositivo para jugar en modo horizontal';
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    text-align: center;
-    background: rgba(2, 8, 14, 0.95);
-    color: var(--neon-cyan);
-    padding: 14px;
-    font-family: 'Orbitron', monospace;
-    font-weight: 700;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--neon-cyan);
-    box-shadow: 0 -10px 30px rgba(85,239,255,0.1);
-    z-index: 999;
-  }
-}
+
 
 /* ═══════════════════════════════════════════════════
    CARD HAND UI
