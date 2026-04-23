@@ -771,8 +771,8 @@
                     ? "Tu turno esta listo. Pulsa Lanzar Dado para avanzar."
                     : view.session.turn.message || "Espera la siguiente fase para continuar.",
                 )}</p>
-                <div class="hud-action-zone">${quickActions}</div>
               </div>
+              <div class="hud-action-zone">${quickActions}</div>
               
               ${
                 view.session.turn.phase === "negotiation" || view.session.turn.phase === "victory_ready"
