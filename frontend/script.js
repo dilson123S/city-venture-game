@@ -781,11 +781,10 @@
                       <h2 class="section-title" style="color: var(--neon-mint); text-align: center;">🤝 Ventana B2B: ${formatCountdown(negotiationSeconds)}</h2>
                       ${renderContractComposer(view)}
                     </div>
+                    ${renderContractsInbox(view)}
                   `
                   : ""
               }
-              
-              ${renderContractsInbox(view)}
             </section>
 
             <section class="hud-panel hud-right">
