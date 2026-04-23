@@ -20,6 +20,7 @@
     },
   };
   let diceSpinTimer = null;
+  let lastRenderedHTML = "";
 
   // Render agrupado para evitar parpadeos
   let renderScheduled = false;
@@ -33,8 +34,12 @@
   }
 
   const uiClock = window.setInterval(() => {
-    if (state.view?.session?.turn?.negotiationEndsAt) {
-      scheduleRender();
+    const endsAt = state.view?.session?.turn?.negotiationEndsAt;
+    if (endsAt) {
+      const timerEl = document.getElementById("b2b-timer-display");
+      if (timerEl) {
+        timerEl.innerText = formatCountdown(getNegotiationSeconds(endsAt));
+      }
     }
   }, 1000);
 
@@ -166,6 +171,10 @@
       case "close-hand":
         state.showHandModal = false;
         render();
+        return;
+      case "toggle-b2b":
+        state.showB2BForm = !state.showB2BForm;
+        scheduleRender();
         return;
       case "toggle-log-drawer":
         state.showLogDrawer = !state.showLogDrawer;
@@ -300,7 +309,7 @@
     return next;
   }
 
-  function pushToast(message, type) {
+  function pushToast(message, type = "error") {
     const toast = {
       id: cryptoRandom(),
       message,
@@ -313,8 +322,6 @@
       scheduleRender();
     }, 2800);
   }
-
-  let lastRenderedHTML = "";
 
   function render() {
     try {
@@ -775,10 +782,13 @@
               <div class="hud-action-zone">${quickActions}</div>
               
               ${
-                view.session.turn.phase === "negotiation" || view.session.turn.phase === "victory_ready"
+                (view.session.turn.phase === "negotiation" || view.session.turn.phase === "victory_ready") && state.showB2BForm
                   ? `
                     <div class="b2b-negotiation-panel">
-                      <h2 class="section-title" style="color: var(--neon-mint); text-align: center;">🤝 Ventana B2B: ${formatCountdown(negotiationSeconds)}</h2>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                        <h2 class="section-title" style="color: var(--neon-mint); margin:0;">🤝 Red B2B</h2>
+                        <button data-action="toggle-b2b" class="ghost" type="button" style="padding: 6px 12px; font-size: 0.8rem;">Cerrar</button>
+                      </div>
                       ${renderContractComposer(view)}
                     </div>
                     ${renderContractsInbox(view)}
@@ -1234,7 +1244,13 @@
         break;
       case "negotiation":
         body += `
+          <div class="detail-card" style="border-color: var(--neon-mint); text-align: center; margin-bottom: 15px; background: rgba(68, 240, 199, 0.05);">
+             <p style="color: var(--neon-mint); font-weight: bold; font-family: 'Orbitron', monospace; font-size: 1.1rem; text-transform: uppercase;">Ventana de Negociacion: <span id="b2b-timer-display">${formatCountdown(getNegotiationSeconds(view.session.turn.negotiationEndsAt))}</span></p>
+          </div>
           <div class="button-row">
+            <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">🤝 Redactar o Ver Contratos B2B</button>
+          </div>
+          <div class="button-row" style="margin-top: 10px;">
             ${
               self.role.id === "creative" && publicSelf.creativeExtendReady !== false
                 ? '<button data-action="do-action" data-command="extend-negotiation" class="secondary" type="button">Extender fase B2B +30s</button>'
