@@ -468,7 +468,7 @@ function resetGameplayState() {
     }
   });
 
-  addLog("La partida comienza. Cada empresa inicia con 500 creditos y 1 carta secreta.");
+  addLog("La partida comienza. Cada jugador arranca con 500 monedas y 1 Carta Suerte.");
 
   // Check if we need rivalry declaration phase
   room.turn = {
@@ -1280,7 +1280,8 @@ function calculateRentPreview(tileId, payerId, marketRoll, options = {}) {
   const property = getPropertyState(tileId);
   const payer = getPlayer(payerId);
   const multiplier = marketRoll <= 2 ? 0.5 : marketRoll <= 4 ? 1 : 2;
-  let total = Math.ceil(tile.baseRent * multiplier * getGlobalRentMultiplier());
+  const levelMultiplier = [1, 1, 1.5, 2.5][(property.level || 1)]; // Level 1=x1, 2=x1.5, 3=x2.5
+  let total = Math.ceil(tile.baseRent * multiplier * levelMultiplier * getGlobalRentMultiplier());
 
   if (property.franchiseTurns > 0) {
     total *= 2;
@@ -1338,7 +1339,7 @@ function closeNegotiationByTimer() {
   if (Date.now() < room.turn.negotiationEndsAt) {
     return;
   }
-  addLog("La ventana B2B expiro y el turno avanza automaticamente.");
+  addLog("El Mercado Negro expiro y el turno avanza automaticamente.");
   endTurn();
 }
 
@@ -1608,7 +1609,7 @@ function runTurnAction(playerId, action, payload = {}) {
       }
       player.creativeExtendReady = false;
       room.turn.negotiationEndsAt = (room.turn.negotiationEndsAt || Date.now()) + 30000;
-      addLog(`${player.name} extiende la ventana B2B 30 segundos.`);
+      addLog(`${player.name} extiende el Mercado Negro 30 segundos.`);
       persistRoom();
       broadcastState();
       return;
@@ -1637,9 +1638,30 @@ function runTurnAction(playerId, action, payload = {}) {
     }
     case "play-card": {
       if (room.turn.phase !== "negotiation" && room.turn.phase !== "victory_ready") {
-        throw new Error("Las cartas solo pueden jugarse en la fase B2B.");
+        throw new Error("Las cartas solo pueden jugarse en el Mercado Negro.");
       }
       playCardFromHand(player, payload);
+      return;
+    }
+    case "upgrade-property": {
+      // Player lands on own property and pays to upgrade it (level 1 -> 2 -> 3)
+      if (room.turn.phase !== "negotiation" && room.turn.phase !== "victory_ready") {
+        throw new Error("Solo puedes mejorar propiedades durante el Mercado Negro.");
+      }
+      const upgradeTile = getTileById(payload.tileId);
+      if (!upgradeTile || upgradeTile.kind !== "property") throw new Error("Propiedad invalida.");
+      const upgradeProp = getPropertyState(upgradeTile.id);
+      const isOwner = upgradeProp.owners.some((o) => o.playerId === player.id);
+      if (!isOwner) throw new Error("No eres dueno de esa propiedad.");
+      const currentLevel = upgradeProp.level || 1;
+      if (currentLevel >= 3) throw new Error("Esta propiedad ya esta al maximo nivel.");
+      const upgradeCost = currentLevel === 1 ? Math.ceil(upgradeTile.price * 0.5) : Math.ceil(upgradeTile.price * 0.75);
+      spendCredits(player.id, upgradeCost, `mejora de ${upgradeTile.name} a nivel ${currentLevel + 1}`);
+      upgradeProp.level = currentLevel + 1;
+      const levelEmojis = ["", "🏠", "🏹", "🌌"];
+      addLog(`${player.name} mejoro ${upgradeTile.name} a ${levelEmojis[currentLevel + 1]} Nivel ${currentLevel + 1}! Renta base aumenta.`);
+      persistRoom();
+      broadcastState();
       return;
     }
     case "end-turn": {

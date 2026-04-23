@@ -731,7 +731,7 @@
             <div class="hud-role-chip">${escapeHtml(self.role.name)}</div>
             <div class="hud-heading">
               <h1 class="hud-title">City Venture</h1>
-              <p class="hud-subtitle">B2B Connect</p>
+              <p class="hud-subtitle">Party Game</p>
             </div>
             <div class="hud-role-chip">${escapeHtml(rightTopLabel)}</div>
           </header>
@@ -743,11 +743,11 @@
                 ${renderVPTracker(publicSelf)}
                 ${renderMarketIndexWidget(view.session)}
                 <article class="hud-stat">
-                  <span>Creditos</span>
+                  <span>\ud83d\udcb0 Monedas</span>
                   <strong>${formatCredits(publicSelf.credits || 0)}</strong>
                 </article>
                 <article class="hud-stat">
-                  <span>Conexiones</span>
+                  <span>🔗 Conexiones</span>
                   <strong>${publicSelf.connections || 0}</strong>
                 </article>
                 <button data-action="toggle-hand" class="primary" type="button" style="padding: 16px 12px; font-size: 1.1rem; box-shadow: 0 0 20px rgba(85,239,255,0.2); margin: 6px 0; border-radius:12px;">
@@ -761,7 +761,7 @@
                 ${renderRivalryBadge(view, publicSelf)}
                 ${renderLoanBadges(self)}
                 <article class="hud-stat">
-                  <span>Habilidad de Rol</span>
+                  <span>\u2b50 Superpoder</span>
                   <strong>${getRoleAbilityDescription(self.role.id)}</strong>
                 </article>
               </div>
@@ -786,7 +786,7 @@
                   ? `
                     <div class="b2b-negotiation-panel">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                        <h2 class="section-title" style="color: var(--neon-mint); margin:0;">🤝 Red B2B</h2>
+                        <h2 class="section-title" style="color: var(--neon-mint); margin:0;">🕵️ Mercado Negro</h2>
                         <button data-action="toggle-b2b" class="ghost" type="button" style="padding: 6px 12px; font-size: 0.8rem;">Cerrar</button>
                       </div>
                       ${renderContractComposer(view)}
@@ -889,16 +889,16 @@
 
   function getRoleAbilityDescription(roleId) {
     const abilities = {
-      energy: "Mitad de renta 1 vez por ronda",
-      software: "Inmune a 1ra carta de ataque",
-      logistics: "Siempre avanzas +1 casilla",
-      creative: "+20 creditos por negociacion exitosa",
-      financial: "+10% ingresos / Duplicar 1 ingreso",
-      strategic: "Ver siguiente carta / Cambiar dado 1 vez",
-      relations: "Empiezas con +2 conexiones",
-      industrial: "20% descuento en propiedades / Compra remota"
+      energy: "\u26a1 Escudo de Energia: Mitad de renta 1 vez",
+      software: "\ud83d\udcbb Anti-Hackeo: Bloquea 1er ataque gratis",
+      logistics: "\ud83d\ude80 Turbo Boost: Siempre avanzas +1 casilla",
+      creative: "\ud83c\udfa8 Viral Boost: +20 monedas por alianza",
+      financial: "\ud83d\udcb0 Lluvia de Dinero: +10% ingresos",
+      strategic: "\ud83e\udde0 Dado Cargado: Elige tu numero 1 vez",
+      relations: "\ud83e\udd1d Red de Amigos: +2 conexiones iniciales",
+      industrial: "\ud83e\udd16 Compra Remota: -20% en propiedades"
     };
-    return abilities[roleId] || "Habilidad no definida";
+    return abilities[roleId] || "Superpoder no definido";
   }
 
   function renderHudQuickActions(view, context = {}) {
@@ -993,7 +993,7 @@
         }
         break;
       case "negotiation":
-        body = '<div class="hud-action-note">Fase B2B activa (45s). Cierra cuando termines de negociar.</div>';
+        body = '<div class="hud-action-note">🕵️ Mercado Negro abierto. Negocia, mejora propiedades o termina tu turno.</div>';
         if (self.role.id === "creative" && publicSelf.creativeExtendReady !== false) {
           body += `
             <div class="hud-action-row">
@@ -1203,7 +1203,7 @@
         <span class="chip">Ronda ${view.session.round}</span>
         ${
           turn.negotiationEndsAt
-            ? `<span class="chip">Ventana B2B ${formatCountdown(negotiationSeconds)}</span>`
+            ? `<span class="chip">🕵️ Mercado Negro ${formatCountdown(negotiationSeconds)}</span>`
             : ""
         }
       </div>
@@ -1243,17 +1243,38 @@
         body += renderMarketActions(view, currentTile);
         break;
       case "negotiation":
+        const ownedProps = self.properties || [];
+        const upgradeButtons = ownedProps
+          .filter((tile) => {
+            const propState = view.session.board?.find((b) => b.tileId === tile.id);
+            return propState && (propState.level || 1) < 3;
+          })
+          .map((tile) => {
+            const propState = view.session.board?.find((b) => b.tileId === tile.id);
+            const lvl = propState?.level || 1;
+            const cost = lvl === 1 ? Math.ceil(tile.price * 0.5) : Math.ceil(tile.price * 0.75);
+            const levelEmojis = ["\ud83c\udfe0", "\ud83c\udfe0", "\ud83c\udff9", "\ud83c\udf0c"];
+            return `<button data-action="do-action" data-command="upgrade-property" data-tile-id="${escapeAttribute(tile.id)}" class="ghost" type="button" style="font-size: 0.85rem;">${levelEmojis[lvl]} ${escapeHtml(tile.name)} \u2192 Nv${lvl + 1} (${formatCredits(cost)})</button>`;
+          })
+          .join("");
+
         body += `
-          <div class="detail-card" style="border-color: var(--neon-mint); text-align: center; margin-bottom: 15px; background: rgba(68, 240, 199, 0.05);">
-             <p style="color: var(--neon-mint); font-weight: bold; font-family: 'Orbitron', monospace; font-size: 1.1rem; text-transform: uppercase;">Ventana de Negociacion: <span id="b2b-timer-display">${formatCountdown(getNegotiationSeconds(view.session.turn.negotiationEndsAt))}</span></p>
+          <div class="detail-card roulette-result-card" style="border-color: var(--neon-mint); text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, rgba(68, 240, 199, 0.08), rgba(85, 239, 255, 0.05));">
+             <p style="color: var(--neon-mint); font-weight: bold; font-family: 'Orbitron', monospace; font-size: 1.1rem; text-transform: uppercase;">\ud83d\udd75\ufe0f Mercado Negro: <span id="b2b-timer-display">${formatCountdown(getNegotiationSeconds(view.session.turn.negotiationEndsAt))}</span></p>
           </div>
           <div class="button-row">
-            <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">🤝 Redactar o Ver Contratos B2B</button>
+            <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">\ud83d\udd75\ufe0f Abrir Mercado Negro</button>
           </div>
+          ${upgradeButtons ? `
+            <div style="margin-top: 12px;">
+              <p class="eyebrow" style="margin-bottom: 8px;">\ud83c\udfd7\ufe0f Mejorar Propiedades</p>
+              <div class="button-row">${upgradeButtons}</div>
+            </div>
+          ` : ""}
           <div class="button-row" style="margin-top: 10px;">
             ${
               self.role.id === "creative" && publicSelf.creativeExtendReady !== false
-                ? '<button data-action="do-action" data-command="extend-negotiation" class="secondary" type="button">Extender fase B2B +30s</button>'
+                ? '<button data-action="do-action" data-command="extend-negotiation" class="secondary" type="button">\u23f0 +30s Mercado Negro</button>'
                 : ""
             }
             <button data-action="do-action" data-command="end-turn" class="primary" type="button">Terminar turno</button>
@@ -1351,29 +1372,42 @@
 
     if (!turn.marketRoll) {
       return `
-        <div class="button-row">
-          <button data-action="do-action" data-command="roll-market" class="primary" type="button">Lanzar dado de mercado</button>
+        <div class="roulette-spin-zone" style="text-align: center; padding: 20px 0;">
+          <div class="roulette-wheel-icon" style="font-size: 4rem; animation: roulette-wobble 1.5s ease-in-out infinite;">\ud83c\udfb0</div>
+          <p class="section-copy" style="margin: 10px 0; color: var(--neon-cyan);">Caiste en <strong>${escapeHtml(currentTile.name)}</strong>. \u00a1Gira la ruleta!</p>
+          <button data-action="do-action" data-command="roll-market" class="primary" type="button" style="font-size: 1.2rem; padding: 14px 30px; border-radius: 50px; animation: roulette-glow 2s ease-in-out infinite;">\ud83c\udfb0 \u00a1Girar Ruleta de la Suerte!</button>
         </div>
       `;
     }
 
+    const rouletteResults = {
+      1: { emoji: "\ud83c\udf89", label: "\u00a1El due\u00f1o se quedo dormido!", color: "#44f0c7", desc: "Pagas la MITAD" },
+      2: { emoji: "\ud83c\udf8a", label: "\u00a1Dia de fiesta!", color: "#44f0c7", desc: "Pagas la MITAD" },
+      3: { emoji: "\ud83d\ude10", label: "\u00a1Te pillaron!", color: "#ffcc6e", desc: "Pagas NORMAL" },
+      4: { emoji: "\ud83d\ude15", label: "Mala suerte...", color: "#ffcc6e", desc: "Pagas NORMAL" },
+      5: { emoji: "\ud83d\udca5", label: "\u00a1Demanda extrema!", color: "#ff7f78", desc: "Pagas DOBLE" },
+      6: { emoji: "\ud83d\udd25", label: "\u00a1El mercado arde!", color: "#ff7f78", desc: "Pagas DOBLE" },
+    };
+    const result = rouletteResults[turn.marketRoll] || rouletteResults[3];
+
     return `
-      <div class="detail-card">
-        <p><strong>Propiedad:</strong> ${escapeHtml(currentTile.name)}</p>
-        <p><strong>Mercado:</strong> ${turn.marketRoll} - ${escapeHtml(turn.rentPreview.marketLabel)}</p>
-        <p><strong>Renta actual:</strong> ${formatCredits(turn.rentPreview.total)}</p>
+      <div class="roulette-result-card" style="text-align: center; padding: 16px; border: 2px solid ${result.color}; border-radius: 16px; background: ${result.color}15; animation: roulette-reveal 0.5s ease-out;">
+        <div style="font-size: 3.5rem; margin-bottom: 8px; animation: roulette-bounce 0.6s ease-out;">${result.emoji}</div>
+        <p style="color: ${result.color}; font-weight: bold; font-family: 'Orbitron', monospace; font-size: 1.2rem; margin: 4px 0;">${result.label}</p>
+        <p style="color: var(--text-soft); font-size: 0.9rem;">${result.desc}</p>
+        <p style="color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 1.4rem; font-weight: bold; margin-top: 8px;">${formatCredits(turn.rentPreview.total)}</p>
       </div>
-      <div class="button-row">
-        <button data-action="do-action" data-command="pay-rent" class="primary" type="button">Pagar renta</button>
-        <button data-action="do-action" data-command="reroll-market" class="ghost" type="button">Repetir dado por 50</button>
+      <div class="button-row" style="margin-top: 12px;">
+        <button data-action="do-action" data-command="pay-rent" class="primary" type="button" style="font-size: 1.1rem;">\ud83d\udcb8 Pagar ${formatCredits(turn.rentPreview.total)}</button>
+        <button data-action="do-action" data-command="reroll-market" class="ghost" type="button">\ud83c\udfb2 Volver a girar (50 monedas)</button>
         ${
           publicSelf.connections >= 5
-            ? '<button data-action="do-action" data-command="skip-rent-with-connections" class="secondary" type="button">Usar 5 conexiones</button>'
+            ? '<button data-action="do-action" data-command="skip-rent-with-connections" class="secondary" type="button">\ud83d\udc65 Usar 5 conexiones para no pagar</button>'
             : ""
         }
         ${
           self.role.id === "energy" && publicSelf.energyRentDiscountReady
-            ? '<button data-action="do-action" data-command="energy-rent-discount" class="ghost" type="button">Mitad de renta</button>'
+            ? '<button data-action="do-action" data-command="energy-rent-discount" class="ghost" type="button">\u26a1 Mitad de renta (Superpoder)</button>'
             : ""
         }
       </div>
@@ -1501,7 +1535,7 @@
   function renderContractComposer(view) {
     const self = view.self;
     if (!self.isCurrentPlayer || !["negotiation", "victory_ready"].includes(view.session.turn.phase)) {
-      return `<div class="contract-composer empty-state">Podras proponer contratos en la fase B2B de tu turno.</div>`;
+      return `<div class="contract-composer empty-state">Podras proponer alianzas en el Mercado Negro de tu turno.</div>`;
     }
 
     const otherPlayers = view.session.players.filter((player) => player.id !== self.id);
@@ -1541,7 +1575,7 @@
         </div>
         <div class="field-inline">
           <div class="field">
-            <label for="offerCredits">Tus creditos ofrecidos</label>
+            <label for="offerCredits">Tus monedas ofrecidas</label>
             <input id="offerCredits" name="offerCredits" type="number" min="0" step="10" value="0" />
           </div>
           <div class="field">
@@ -1638,7 +1672,7 @@
         <p>${escapeHtml(card.text)}</p>
         ${
           !self.isCurrentPlayer || !["negotiation", "victory_ready"].includes(view.session.turn.phase)
-            ? '<div class="empty-state">Las cartas se juegan en la fase B2B de tu turno.</div>'
+            ? '<div class="empty-state">Las cartas se juegan en el Mercado Negro de tu turno.</div>'
             : options.disabled
               ? `<div class="empty-state">${escapeHtml(options.reason)}</div>`
               : `
@@ -2044,7 +2078,7 @@
   }
 
   function formatCredits(amount) {
-    return `${Number(amount || 0).toLocaleString("es-CO")} creditos`;
+    return `${Number(amount || 0).toLocaleString("es-CO")} monedas`;
   }
 
   function getNegotiationSeconds(deadline) {

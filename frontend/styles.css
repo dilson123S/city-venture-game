@@ -1825,6 +1825,105 @@ button:disabled { cursor: not-allowed; opacity: 0.4; }
 }
 
 
+/* ═══════════════════════════════════════════════════
+   ROULETTE OF LUCK ANIMATIONS
+   ═══════════════════════════════════════════════════ */
+
+@keyframes roulette-wobble {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  25% { transform: rotate(8deg) scale(1.1); }
+  50% { transform: rotate(-5deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.08); }
+}
+
+@keyframes roulette-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(85, 239, 255, 0.3), 0 0 40px rgba(85, 239, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(85, 239, 255, 0.6), 0 0 60px rgba(85, 239, 255, 0.3), 0 0 80px rgba(68, 240, 199, 0.2);
+  }
+}
+
+@keyframes roulette-reveal {
+  0% { transform: scale(0.5) rotateY(90deg); opacity: 0; }
+  50% { transform: scale(1.15) rotateY(0deg); opacity: 1; }
+  100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+}
+
+@keyframes roulette-bounce {
+  0% { transform: scale(0.3) translateY(30px); opacity: 0; }
+  50% { transform: scale(1.3) translateY(-10px); }
+  70% { transform: scale(0.9) translateY(5px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.roulette-result-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.roulette-result-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    #44f0c7, #55efff, #ff9ac7, #ffcc6e, #ff7f78, #86a8ff, #44f0c7
+  );
+  opacity: 0.15;
+  animation: roulette-border-spin 3s linear infinite;
+  z-index: 0;
+}
+
+.roulette-result-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes roulette-border-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════
+   PROPERTY LEVEL INDICATORS
+   ═══════════════════════════════════════════════════ */
+
+.property-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: 'Orbitron', monospace;
+}
+
+.property-level-1 {
+  background: rgba(85, 239, 255, 0.1);
+  border: 1px solid rgba(85, 239, 255, 0.2);
+  color: var(--neon-cyan);
+}
+
+.property-level-2 {
+  background: rgba(255, 204, 110, 0.15);
+  border: 1px solid rgba(255, 204, 110, 0.3);
+  color: #ffcc6e;
+}
+
+.property-level-3 {
+  background: rgba(255, 127, 120, 0.15);
+  border: 1px solid rgba(255, 127, 120, 0.3);
+  color: #ff7f78;
+  animation: level3-pulse 2s ease-in-out infinite;
+}
+
+@keyframes level3-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 127, 120, 0.2); }
+  50% { box-shadow: 0 0 16px rgba(255, 127, 120, 0.5), 0 0 30px rgba(255, 127, 120, 0.2); }
+}
 
 /* ═══════════════════════════════════════════════════
    CARD HAND UI
