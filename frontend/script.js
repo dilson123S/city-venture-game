@@ -1242,7 +1242,7 @@
       case "market_roll":
         body += renderMarketActions(view, currentTile);
         break;
-      case "negotiation":
+      case "negotiation": {
         const ownedProps = self.properties || [];
         const upgradeButtons = ownedProps
           .filter((tile) => {
@@ -1281,6 +1281,7 @@
           </div>
         `;
         break;
+      }
       case "skip_turn":
         body += `
           <div class="button-row">
