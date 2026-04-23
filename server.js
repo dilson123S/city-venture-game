@@ -1458,13 +1458,8 @@ function runTurnAction(playerId, action, payload = {}) {
         buildTower(player.id);
         return;
       }
-      const wantsRiggedRoll =
-        (player.roleId === "strategic" || player.copiedPassiveRoleId === "strategic") && !player.strategicDiceUsed && Number.isInteger(payload.riggedRoll);
-      const rawRoll = wantsRiggedRoll ? clamp(payload.riggedRoll, 1, 6) : randomDie();
+      const rawRoll = randomDie();
       const movement = rawRoll + ((player.roleId === "logistics" || player.copiedPassiveRoleId === "logistics") ? 1 : 0);
-      if (wantsRiggedRoll) {
-        player.strategicDiceUsed = true;
-      }
       movePlayer(
         player,
         movement,

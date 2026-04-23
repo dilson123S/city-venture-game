@@ -1345,19 +1345,7 @@
     return `
       <form data-form="turn-action" class="field-inline">
         <input type="hidden" name="command" value="roll-die" />
-        ${
-          self.role.id === "strategic" && !publicSelf.strategicDiceUsed
-            ? `
-              <div class="field">
-                <label for="riggedRoll">Dado estrategico</label>
-                <select id="riggedRoll" name="riggedRoll">
-                  <option value="">Aleatorio</option>
-                  ${[1, 2, 3, 4, 5, 6].map((value) => `<option value="${value}">${value}</option>`).join("")}
-                </select>
-              </div>
-            `
-            : "<div></div>"
-        }
+        <div></div>
         <div class="field">
           <label>&nbsp;</label>
           <button class="primary" type="submit">Lanzar dado</button>
@@ -1974,6 +1962,8 @@
       4: [[28, 28], [72, 28], [28, 72], [72, 72]],
       5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]],
       6: [[28, 24], [72, 24], [28, 50], [72, 50], [28, 76], [72, 76]],
+      7: [[28, 20], [72, 20], [28, 50], [50, 50], [72, 50], [28, 80], [72, 80]],
+      8: [[28, 20], [72, 20], [28, 40], [72, 40], [28, 60], [72, 60], [28, 80], [72, 80]],
     };
     return `
       <div class="die-face die-${sideClass}">
@@ -2026,15 +2016,15 @@
   }
 
   function syncDiceFaceFromView(view) {
-    const rawRoll = Number(view?.session?.turn?.lastRoll?.rawRoll);
-    if (!Number.isInteger(rawRoll) || rawRoll < 1 || rawRoll > 6) {
+    const movement = Number(view?.session?.turn?.lastRoll?.movement);
+    if (!Number.isInteger(movement) || movement < 1 || movement > 8) {
       return;
     }
     if (state.dice.spinning) {
-      state.dice.pendingFace = rawRoll;
+      state.dice.pendingFace = movement;
       return;
     }
-    state.dice.face = rawRoll;
+    state.dice.face = movement;
   }
 
   function countJoinedPlayers(view) {
