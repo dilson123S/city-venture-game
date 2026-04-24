@@ -794,11 +794,11 @@
               <div class="hud-action-zone">${quickActions}</div>
               
               ${
-                (view.session.turn.phase === "negotiation" || view.session.turn.phase === "victory_ready") && state.showB2BForm
+                (view.session.turn.phase === "negotiation" || view.session.turn.phase === "victory_ready" || view.session.turn.phase === "await_roll") && state.showB2BForm
                   ? `
                     <div class="b2b-negotiation-panel">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                        <h2 class="section-title" style="color: var(--neon-mint); margin:0;">🕵️ Mercado Negro</h2>
+                        <h2 class="section-title" style="color: var(--neon-mint); margin:0;">\ud83d\udd75\ufe0f Mercado Negro</h2>
                         <button data-action="toggle-b2b" class="ghost" type="button" style="padding: 6px 12px; font-size: 0.8rem;">Cerrar</button>
                       </div>
                       ${renderContractComposer(view)}
@@ -1351,6 +1351,9 @@
           <button class="primary" type="submit">Lanzar dado</button>
         </div>
       </form>
+      <div class="button-row" style="margin-top: 10px;">
+        <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">\ud83d\udd75\ufe0f Abrir Mercado Negro</button>
+      </div>
       ${
         self.canBuildTower
           ? `
