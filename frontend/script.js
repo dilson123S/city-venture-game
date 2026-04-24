@@ -944,6 +944,11 @@
       case "await_roll":
       case "victory_ready":
         body = '<div class="hud-action-note">Lanza el dado central para continuar el turno.</div>';
+        body += `
+          <div class="hud-action-row" style="margin-top: 10px;">
+            <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">\ud83d\udd75\ufe0f Abrir Mercado Negro</button>
+          </div>
+        `;
         if (turn.phase === "victory_ready" && self.canBuildTower) {
           body += `
             <div class="hud-action-row">
@@ -1004,8 +1009,36 @@
           `;
         }
         break;
-      case "negotiation":
-        body = '<div class="hud-action-note">🕵️ Mercado Negro abierto. Negocia, mejora propiedades o termina tu turno.</div>';
+      case "negotiation": {
+        const ownedProps = self.properties || [];
+        const upgradeButtons = ownedProps
+          .filter((tile) => {
+            const propState = view.session.board?.find((b) => b.tileId === tile.id);
+            return propState && (propState.level || 1) < 3;
+          })
+          .map((tile) => {
+            const propState = view.session.board?.find((b) => b.tileId === tile.id);
+            const lvl = propState?.level || 1;
+            const cost = lvl === 1 ? Math.ceil(tile.price * 0.5) : Math.ceil(tile.price * 0.75);
+            const levelEmojis = ["\ud83c\udfe0", "\ud83c\udfe0", "\ud83c\udff9", "\ud83c\udf0c"];
+            return `<button data-action="do-action" data-command="upgrade-property" data-tile-id="${escapeAttribute(tile.id)}" class="ghost" type="button" style="font-size: 0.85rem; padding: 6px 10px; flex: 1;">${levelEmojis[lvl]} ${escapeHtml(tile.name)} \u2192 Nv${lvl + 1} (${formatCredits(cost)})</button>`;
+          })
+          .join("");
+
+        body = `
+          <div class="detail-card roulette-result-card" style="border-color: var(--neon-mint); text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, rgba(68, 240, 199, 0.08), rgba(85, 239, 255, 0.05));">
+             <p style="color: var(--neon-mint); font-weight: bold; font-family: 'Orbitron', monospace; font-size: 1.1rem; text-transform: uppercase;">\ud83d\udd75\ufe0f Mercado Negro: <span id="b2b-timer-display">${formatCountdown(getNegotiationSeconds(view.session.turn.negotiationEndsAt))}</span></p>
+          </div>
+          <div class="hud-action-row">
+            <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">\ud83d\udd75\ufe0f Abrir Mercado Negro</button>
+          </div>
+          ${upgradeButtons ? `
+            <div style="margin-top: 12px; margin-bottom: 12px;">
+              <p class="eyebrow" style="margin-bottom: 8px;">\ud83c\udfd7\ufe0f Mejorar Propiedades</p>
+              <div class="hud-action-row" style="flex-wrap: wrap; gap: 8px;">${upgradeButtons}</div>
+            </div>
+          ` : ""}
+        `;
         if (self.role.id === "creative" && publicSelf.creativeExtendReady !== false) {
           body += `
             <div class="hud-action-row">
@@ -1014,11 +1047,12 @@
           `;
         }
         body += `
-          <div class="hud-action-row">
+          <div class="hud-action-row" style="margin-top: 10px;">
             <button data-action="do-action" data-command="end-turn" class="primary" type="button">Terminar turno</button>
           </div>
         `;
         break;
+      }
       case "skip_turn":
         body = `
           <div class="hud-action-row">
@@ -1196,176 +1230,6 @@
         ${renderSectorBadges(player.dominatedSectors)}
         ${renderRivalryBadge(view, player)}
       </article>
-    `;
-  }
-
-  function renderActionPanel(view) {
-    const self = view.self;
-    const publicSelf = getPublicPlayer(view, self.id);
-    const turn = view.session.turn;
-    const currentTile = turn.tileId ? getTile(view, turn.tileId) : getTileByPosition(view, publicSelf.position);
-    const negotiationSeconds = getNegotiationSeconds(turn.negotiationEndsAt);
-    const freeProperties = getFreeProperties(view);
-
-    let body = `
-      <h2 class="section-title">${self.isCurrentPlayer ? "Tus acciones" : "Esperando turno"}</h2>
-      <p class="section-copy">${escapeHtml(turn.message || "")}</p>
-      <div class="chip-row">
-        <span class="chip">Casilla ${escapeHtml(currentTile?.name || "Sin mover")}</span>
-        <span class="chip">Ronda ${view.session.round}</span>
-        ${
-          turn.negotiationEndsAt
-            ? `<span class="chip">🕵️ Mercado Negro ${formatCountdown(negotiationSeconds)}</span>`
-            : ""
-        }
-      </div>
-    `;
-
-    if (!self.isCurrentPlayer && view.session.status !== "finished") {
-      return body + `<div class="empty-state">Tus cartas, contratos y perfil siguen disponibles aunque no sea tu turno.</div>`;
-    }
-
-    if (view.session.status === "finished") {
-      return body + `<div class="empty-state">La partida ya termino. Puedes seguir revisando tu mano, contratos y perfil.</div>`;
-    }
-
-    switch (turn.phase) {
-      case "await_roll":
-      case "victory_ready":
-        body += renderRollActions(view);
-        break;
-      case "movement_adjust":
-        body += `
-          <div class="button-row">
-            <button data-action="do-action" data-command="adjust-route" data-delta="-1" class="ghost" type="button">Retroceder 1</button>
-            <button data-action="do-action" data-command="adjust-route" data-delta="0" class="secondary" type="button">Mantener</button>
-            <button data-action="do-action" data-command="adjust-route" data-delta="1" class="primary" type="button">Avanzar 1</button>
-          </div>
-        `;
-        break;
-      case "property_offer":
-        body += `
-          <div class="button-row">
-            <button data-action="do-action" data-command="buy-property" class="primary" type="button">Comprar ${formatCredits(currentTile.price)}</button>
-            <button data-action="do-action" data-command="skip-property" class="ghost" type="button">Dejar libre</button>
-          </div>
-        `;
-        break;
-      case "market_roll":
-        body += renderMarketActions(view, currentTile);
-        break;
-      case "negotiation": {
-        const ownedProps = self.properties || [];
-        const upgradeButtons = ownedProps
-          .filter((tile) => {
-            const propState = view.session.board?.find((b) => b.tileId === tile.id);
-            return propState && (propState.level || 1) < 3;
-          })
-          .map((tile) => {
-            const propState = view.session.board?.find((b) => b.tileId === tile.id);
-            const lvl = propState?.level || 1;
-            const cost = lvl === 1 ? Math.ceil(tile.price * 0.5) : Math.ceil(tile.price * 0.75);
-            const levelEmojis = ["\ud83c\udfe0", "\ud83c\udfe0", "\ud83c\udff9", "\ud83c\udf0c"];
-            return `<button data-action="do-action" data-command="upgrade-property" data-tile-id="${escapeAttribute(tile.id)}" class="ghost" type="button" style="font-size: 0.85rem;">${levelEmojis[lvl]} ${escapeHtml(tile.name)} \u2192 Nv${lvl + 1} (${formatCredits(cost)})</button>`;
-          })
-          .join("");
-
-        body += `
-          <div class="detail-card roulette-result-card" style="border-color: var(--neon-mint); text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, rgba(68, 240, 199, 0.08), rgba(85, 239, 255, 0.05));">
-             <p style="color: var(--neon-mint); font-weight: bold; font-family: 'Orbitron', monospace; font-size: 1.1rem; text-transform: uppercase;">\ud83d\udd75\ufe0f Mercado Negro: <span id="b2b-timer-display">${formatCountdown(getNegotiationSeconds(view.session.turn.negotiationEndsAt))}</span></p>
-          </div>
-          <div class="button-row">
-            <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">\ud83d\udd75\ufe0f Abrir Mercado Negro</button>
-          </div>
-          ${upgradeButtons ? `
-            <div style="margin-top: 12px;">
-              <p class="eyebrow" style="margin-bottom: 8px;">\ud83c\udfd7\ufe0f Mejorar Propiedades</p>
-              <div class="button-row">${upgradeButtons}</div>
-            </div>
-          ` : ""}
-          <div class="button-row" style="margin-top: 10px;">
-            ${
-              self.role.id === "creative" && publicSelf.creativeExtendReady !== false
-                ? '<button data-action="do-action" data-command="extend-negotiation" class="secondary" type="button">\u23f0 +30s Mercado Negro</button>'
-                : ""
-            }
-            <button data-action="do-action" data-command="end-turn" class="primary" type="button">Terminar turno</button>
-          </div>
-        `;
-        break;
-      }
-      case "skip_turn":
-        body += `
-          <div class="button-row">
-            <button data-action="do-action" data-command="end-turn" class="primary" type="button">Cerrar turno bloqueado</button>
-          </div>
-        `;
-        break;
-      default:
-        body += `<div class="empty-state">La consola espera la siguiente accion del servidor.</div>`;
-    }
-
-    if (self.role.id === "financial" && publicSelf.financialDoubleReady) {
-      body += `
-        <div class="button-row">
-          <button data-action="do-action" data-command="arm-financial-double" class="ghost" type="button">Doblar proximo ingreso</button>
-        </div>
-      `;
-    }
-
-    if (self.role.id === "relations" && publicSelf.networkingExtraReady) {
-      body += `
-        <div class="button-row">
-          <button data-action="do-action" data-command="arm-networking-bonus" class="ghost" type="button">Armar conexion extra</button>
-        </div>
-      `;
-    }
-
-    if (self.role.id === "industrial" && freeProperties.length && !publicSelf.industrialRemoteBuyUsed) {
-      body += `
-        <form data-form="turn-action" class="field">
-          <input type="hidden" name="command" value="remote-buy-property" />
-          <label for="remote-buy">Compra remota</label>
-          <select id="remote-buy" name="tileId">
-            ${freeProperties
-              .map((tile) => `<option value="${escapeAttribute(tile.id)}">${escapeHtml(tile.name)} - ${formatCredits(tile.price)}</option>`)
-              .join("")}
-          </select>
-          <button class="ghost" type="submit">Comprar desde cualquier casilla</button>
-        </form>
-      `;
-    }
-
-    return body;
-  }
-
-  function renderRollActions(view) {
-    const self = view.self;
-    const publicSelf = getPublicPlayer(view, self.id);
-    return `
-      <form data-form="turn-action" class="field-inline">
-        <input type="hidden" name="command" value="roll-die" />
-        <div></div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button class="primary" type="submit">Lanzar dado</button>
-        </div>
-      </form>
-      <div class="button-row" style="margin-top: 10px;">
-        <button data-action="toggle-b2b" class="secondary" type="button" style="border-color: var(--neon-mint); color: var(--neon-mint);">\ud83d\udd75\ufe0f Abrir Mercado Negro</button>
-      </div>
-      ${
-        self.canBuildTower
-          ? `
-            <div class="button-row">
-              <button data-action="do-action" data-command="roll-die" data-force-build="true" class="secondary" type="button">
-                Construir Venture Tower
-              </button>
-            </div>
-          `
-          : ""
-      }
-      ${self.previewCard ? `<div class="detail-card"><p><strong>Vista estrategica:</strong> ${escapeHtml(self.previewCard.title)}</p></div>` : ""}
     `;
   }
 
