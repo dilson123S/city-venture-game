@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>City Venture - Manual del Juego</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #050a11;
+      --surface: #0a1320;
+      --surface-light: #101c2e;
+      --border: rgba(85, 239, 255, 0.2);
+      
+      --neon-cyan: #55efff;
+      --neon-mint: #44f0c7;
+      --neon-blue: #4d8bff;
+      --neon-amber: #ffc84a;
+      --neon-red: #ff5b5b;
+      
+      --text: #e0e6ed;
+      --text-soft: #8a9bb1;
+      --radius-lg: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      line-height: 1.6;
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(68, 240, 199, 0.03), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(85, 239, 255, 0.03), transparent 25%);
+      background-attachment: fixed;
+    }
+
+    header {
+      background: linear-gradient(180deg, rgba(85,239,255,0.1) 0%, transparent 100%);
+      padding: 60px 20px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1, h2, h3 {
+      font-family: 'Orbitron', monospace;
+      margin: 0 0 15px 0;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(85,239,255,0.4);
+    }
+
+    .subtitle {
+      color: var(--neon-cyan);
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-mint));
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      color: var(--neon-cyan);
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    p { margin: 0 0 15px 0; font-size: 1.1rem; }
+
+    ul { margin: 0 0 20px 0; padding-left: 20px; }
+    li { margin-bottom: 10px; font-size: 1.1rem; }
+
+    .highlight { color: var(--neon-amber); font-weight: bold; }
+    .highlight-red { color: var(--neon-red); font-weight: bold; }
+    .highlight-mint { color: var(--neon-mint); font-weight: bold; }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .role-card {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: left;
+    }
+
+    .role-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .role-icon { font-size: 2rem; }
+
+    .role-power {
+      font-size: 0.95rem;
+      color: var(--text-soft);
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .step-list {
+      counter-reset: steps;
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .step-list li {
+      position: relative;
+      padding-left: 50px;
+      margin-bottom: 25px;
+      min-height: 40px;
+    }
+
+    .step-list li::before {
+      counter-increment: steps;
+      content: counter(steps);
+      position: absolute;
+      left: 0; top: -5px;
+      width: 35px; height: 35px;
+      background: var(--neon-cyan);
+      color: #000;
+      font-family: 'Orbitron', monospace;
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(85,239,255,0.5);
+    }
+
+    .info-box {
+      background: rgba(255, 200, 74, 0.1);
+      border-left: 4px solid var(--neon-amber);
+      padding: 15px 20px;
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+      margin: 20px 0;
+    }
+    
+    .footer-note {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>CITY VENTURE</h1>
+    <p class="subtitle">PARTY GAME - MANUAL DEL JUEGO</p>
+  </header>
+
+  <div class="container">
+
+    <div class="section-card">
+      <h2 class="section-title">🎮 ¿De qué trata el juego?</h2>
+      <p><strong>City Venture</strong> es un juego de tablero virtual acelerado, caótico y muy competitivo. Piensa en él como un Monopoly futurista donde todo sucede más rápido y puedes molestar a tus amigos con cartas de ataque.</p>
+      <p>Eres el CEO de una empresa tecnológica intentando dominar la ciudad. Moviéndote por el tablero, comprarás propiedades, cobrarás rentas, utilizarás superpoderes únicos y negociarás (o estafarás) en el Mercado Negro.</p>
+      <div class="info-box">
+        <strong>🎯 OBJETIVO PARA GANAR:</strong> El primer jugador en conseguir <strong>10 Venture Points (Puntos de Victoria)</strong> es el ganador absoluto.
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">🔄 Cómo se juega (Tu Turno)</h2>
+      <p>El juego se desarrolla por turnos. En tu turno, sigues estos simples pasos:</p>
+      
+      <ol class="step-list">
+        <li>
+          <strong>Tirar el Dado:</strong>
+          Al principio de tu turno, presionas el botón "Lanzar Dado". Tu ficha se moverá automáticamente esa cantidad de espacios. (Si eres <em>El Velocista</em>, sumarás 1 paso extra).
+        </li>
+        <li>
+          <strong>Caer en una Casilla:</strong> Dependiendo de dónde caigas, sucederá algo:
+          <ul>
+            <li><strong>Propiedad Libre:</strong> Puedes comprarla si tienes suficientes Monedas.</li>
+            <li><strong>Propiedad de Otro:</strong> ¡A pagar renta! A veces tendrás que lanzar la <em>Ruleta de la Suerte</em> para ver si pagas la mitad, normal, o el doble.</li>
+            <li><strong>Cartas Suerte:</strong> Recibes una carta al azar que se guarda en tu mano. Puede ser de ataque, defensa, o beneficios económicos.</li>
+            <li><strong>Trampas / Multas:</strong> Pierdes un turno o te restan monedas.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>El Mercado Negro:</strong> 
+          Antes de terminar tu turno, puedes abrir el <strong>Mercado Negro</strong>. Aquí puedes crear "Contratos" con otros jugadores. Puedes ofrecerles monedas a cambio de una de sus propiedades, o pedirles monedas, ¡tú decides! El otro jugador puede Aceptar o Rechazar tu oferta.
+        </li>
+        <li>
+          <strong>Mejorar Propiedades:</strong>
+          También en la fase del Mercado Negro, si ya tienes propiedades, puedes pagar para subirles el nivel (Nv2, Nv3...). Entre más alto sea el nivel, más cara será la renta que te pagarán los demás.
+        </li>
+        <li>
+          <strong>Terminar Turno:</strong>
+          Una vez que compraste, atacaste o negociaste, le pasas el turno al siguiente jugador.
+        </li>
+      </ol>
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">🏆 Puntos de Victoria (Venture Points)</h2>
+      <p>Recuerda que no gana el que tenga más dinero, sino el primero en llegar a <strong>10 VP</strong>. ¿Cómo se consiguen?</p>
+      <ul>
+        <li><span class="highlight-mint">Conexiones:</span> Las conexiones las consigues cerrando tratos y cayendo en casillas clave. Cada cierta cantidad de conexiones, ganas 1 VP.</li>
+        <li><span class="highlight-mint">Subir Propiedades de Nivel:</span> Las propiedades nivel 3 o máximo dan Venture Points extra.</li>
+        <li><span class="highlight-mint">Dominio de Sector:</span> Si eres dueño de varias propiedades del mismo color (Energía, Software, Creativo, etc.), ganas Puntos de Victoria.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">🦸 Los Superpoderes (Roles)</h2>
+      <p>Al iniciar la partida, cada jugador elegirá un Rol único. Cada uno tiene habilidades pasivas (que ocurren solas) y habilidades activas (que puedes usar con un botón):</p>
+      
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-card-header"><span class="role-icon">⚡</span> El Energizador</div>
+          <div class="role-power"><strong>Pasiva:</strong> Pagas 20 monedas menos en multas y trampas.</div>
+          <div class="role-power"><strong>Activa:</strong> Una vez por turno pagas solo la MITAD de una renta enemiga.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-header"><span class="role-icon">💻</span> El Hacker</div>
+          <div class="role-power"><strong>Pasiva:</strong> Bloqueas el primer ataque que recibas GRATIS.</div>
+          <div class="role-power"><strong>Activa:</strong> Tienes 2 escudos extra para defenderte del bullying de cartas.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-header"><span class="role-icon">🚀</span> El Velocista</div>
+          <div class="role-power"><strong>Pasiva:</strong> Siempre avanzas 1 casilla extra al lanzar el dado.</div>
+          <div class="role-power"><strong>Activa:</strong> Puedes ajustar tu ruta avanzando o retrocediendo 1 casilla extra a voluntad.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-header"><span class="role-icon">🎨</span> El Influencer</div>
+          <div class="role-power"><strong>Pasiva:</strong> Ganas 20 monedas extra por cada alianza que te acepten.</div>
+          <div class="role-power"><strong>Activa:</strong> Puedes darle más tiempo de reloj al Mercado Negro.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-header"><span class="role-icon">💰</span> El Millonario</div>
+          <div class="role-power"><strong>Pasiva:</strong> Recibes 10% extra en TODOS tus ingresos.</div>
+          <div class="role-power"><strong>Activa:</strong> Una vez por turno, puedes decirle al juego que DUPLIQUE tu siguiente ingreso de dinero.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-header"><span class="role-icon">🤖</span> El Robot</div>
+          <div class="role-power"><strong>Pasiva:</strong> Pagas 20% menos al comprar propiedades nuevas.</div>
+          <div class="role-power"><strong>Activa:</strong> Una vez por juego, puedes comprar una propiedad libre sin necesidad de caer encima de ella.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-header"><span class="role-icon">🤝</span> El Popular</div>
+          <div class="role-power"><strong>Pasiva:</strong> Empiezas la partida con 2 Conexiones de ventaja.</div>
+          <div class="role-power"><strong>Activa:</strong> Una vez por turno, ganas 1 conexión gratis al cerrar un trato.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">🃏 Las Cartas (El Caos)</h2>
+      <p>A lo largo de la partida irás recolectando cartas que se guardan en el botón <strong>"🎴 Cartas"</strong> de tu pantalla. Puedes usarlas (casi todas) <strong>en el turno de cualquier jugador</strong>, no tienes que esperar a que sea el tuyo.</p>
+      <ul>
+        <li><span class="highlight-red">Cartas de Ataque:</span> Úsalas para robarle dinero a tus amigos, congelar sus propiedades para no pagarles renta, o forzarlos a perder un turno. ¡La amistad termina aquí!</li>
+        <li><span class="highlight-mint">Cartas de Defensa:</span> Úsalas como contraataque si alguien te tira una trampa o intenta robarte.</li>
+        <li><span class="highlight">Cartas Económicas:</span> Beneficios instantáneos como multiplicar tus cobros de renta o robar un pequeño porcentaje del dinero de todos los demás.</li>
+      </ul>
+      <p><em>Consejo: ¡Guarda tus mejores ataques para el final, cuando alguien esté a punto de conseguir los 10 Puntos de Victoria!</em></p>
+    </div>
+
+    <div class="footer-note">
+      <p>City Venture Party Game &copy; 2026 - ¡Arruinando amistades corporativas de forma divertida!</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
